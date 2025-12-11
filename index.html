@@ -109,7 +109,7 @@
       text-decoration: underline;
     }
 
-    /* Viewer Mode - Cake */
+    /* Viewer Mode */
     #viewer-mode {
       animation: fadeIn 1.5s;
     }
@@ -160,12 +160,6 @@
     @keyframes flicker {
       0% { transform: translateX(-50%) scale(1); opacity: 0.9; }
       100% { transform: translateX(-50%) scale(1.15); opacity: 1; }
-    }
-
-    .mic-instruction {
-      margin: 30px 0;
-      font-size: 1.2rem;
-      opacity: 0.9;
     }
 
     /* Celebration */
@@ -230,6 +224,7 @@
 
     .hidden { display: none; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
     @keyframes pop {
       0% { transform: scale(0.3); opacity: 0; }
       70% { transform: scale(1.05); }
@@ -256,7 +251,7 @@
   <!-- Viewer Mode -->
   <div class="container hidden" id="viewer-mode">
     <h1>Happy Birthday!</h1>
-    <p class="subtitle">Make a wish and blow out the candles</p>
+    <p class="subtitle">Make a wish 🎂</p>
 
     <div class="cake-wrapper">
       <div class="cake">
@@ -266,11 +261,12 @@
       </div>
     </div>
 
-    <p class="mic-instruction">Allow microphone and blow gently</p>
-    <button class="btn" id="allow-mic">Allow Microphone</button>
+    <!-- New Button -->
+    <button class="btn" id="open-wish">Open Wish Note 🎁</button>
+
   </div>
 
-  <!-- Celebration Screen -->
+  <!-- Wish Note -->
   <div id="celebration">
     <div class="wish-card">
       <h1>Happy Birthday!</h1>
@@ -316,57 +312,12 @@
       document.getElementById('link-result').classList.remove('hidden');
     };
 
-    // VIEWER — MICROPHONE BLOW DETECTION
-    document.getElementById('allow-mic').onclick = async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const audioCtx = new AudioContext();
-
-        // IMPORTANT FIX
-        await audioCtx.resume();
-
-        const source = audioCtx.createMediaStreamSource(stream);
-        const analyser = audioCtx.createAnalyser();
-        analyser.fftSize = 512;
-
-        source.connect(analyser);
-        const data = new Uint8Array(analyser.frequencyBinCount);
-
-        let blown = false;
-
-        const checkBlow = () => {
-          analyser.getByteFrequencyData(data);
-          const volume = data.reduce((a, b) => a + b) / data.length;
-
-          // LOWER sensitivity so it actually works
-          if (!blown && volume > 40) {
-            blown = true;
-            extinguishCandles();
-          } else {
-            requestAnimationFrame(checkBlow);
-          }
-        };
-
-        checkBlow();
-        document.getElementById('allow-mic').textContent = 'Blow now...';
-
-      } catch (err) {
-        alert('Please allow microphone to blow the candles!');
-      }
+    // Open Wish Note instantly
+    document.getElementById('open-wish').onclick = () => {
+      viewerMode.classList.add('hidden');
+      celebration.classList.add('show');
+      startConfetti();
     };
-
-    function extinguishCandles() {
-      document.querySelectorAll('.flame').forEach(f => {
-        f.style.opacity = '0';
-        f.style.transform = 'translateX(-50%) scale(0)';
-      });
-
-      setTimeout(() => {
-        viewerMode.classList.add('hidden');
-        celebration.classList.add('show');
-        startConfetti();
-      }, 1000);
-    }
 
     // CONFETTI
     const canvas = document.getElementById('confetti');
